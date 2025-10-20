@@ -11,7 +11,7 @@ interface QuotePreviewProps {
 
 const QuotePreview: React.FC<QuotePreviewProps> = ({ quote, subtotal, taxAmount, total }) => {
   return (
-    <div className="bg-white p-8 shadow-lg rounded-2xl border border-gray-200" id="quote-preview">
+    <div className="bg-white p-8 shadow-lg rounded-2xl border border-gray-200" id="print-area">
       <header className="flex justify-between items-start pb-6 border-b-2 border-gray-200">
         <div>
           <h1 className="text-4xl font-bold text-gray-800">{quote.fromName || 'Vaše Jméno / Společnost'}</h1>
