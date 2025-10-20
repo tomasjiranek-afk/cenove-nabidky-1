@@ -3,8 +3,7 @@ import QuoteForm from '../components/QuoteForm';
 import QuotePreview from '../components/QuotePreview';
 import type { Quote, ClientAddress, QuoteItemTemplate } from '../types';
 import { PrintIcon, SaveIcon, ArrowLeftIcon, DownloadIcon } from '../components/icons';
-
-declare const html2pdf: any;
+import { generatePdfFromDom } from '../utils/pdfGenerator';
 
 interface QuoteEditorPageProps {
   initialQuote: Quote;
@@ -30,29 +29,21 @@ const QuoteEditorPage: React.FC<QuoteEditorPageProps> = ({ initialQuote, onSave,
   };
 
   const handleGeneratePdf = () => {
-    if (typeof html2pdf === 'undefined') {
-      console.error('html2pdf.js is not loaded.');
-      alert('Chyba při generování PDF. Knihovna pro generování není načtena.');
-      return;
-    }
-
     setIsGeneratingPdf(true);
     const element = document.getElementById('print-area');
-    const opt = {
-      margin:       0.5,
-      filename:     `Nabidka-${quote.quoteNumber || 'XXXX'}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-    };
-
-    html2pdf().from(element).set(opt).save().then(() => {
+    if (element) {
+        generatePdfFromDom(element, quote)
+            .catch((err) => {
+                console.error("PDF generation failed:", err);
+            })
+            .finally(() => {
+                setIsGeneratingPdf(false);
+            });
+    } else {
+        console.error("Could not find print area.");
+        alert("Chyba: Oblast pro tisk nebyla nalezena.");
         setIsGeneratingPdf(false);
-    }).catch((err: any) => {
-        console.error("PDF generation failed:", err);
-        alert('Při generování PDF došlo k chybě.');
-        setIsGeneratingPdf(false);
-    });
+    }
   };
   
   const handleBack = () => {

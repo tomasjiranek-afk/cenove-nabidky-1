@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import type { Quote } from '../types';
-import { PlusIcon, TrashIcon, PencilIcon, AddressBookIcon, DocumentTextIcon } from '../components/icons';
+import { PlusIcon, TrashIcon, PencilIcon, AddressBookIcon, DocumentTextIcon, DownloadIcon, SpinnerIcon } from '../components/icons';
 import { formatCurrency, formatDate } from '../utils/formatters';
+import { generateQuotePdf } from '../utils/pdfGenerator';
 
 
 interface HomePageProps {
@@ -16,6 +17,7 @@ interface HomePageProps {
 const HomePage: React.FC<HomePageProps> = ({ quotes, onNewQuote, onSelectQuote, onDeleteQuote, onManageAddresses, onManageQuoteItems }) => {
     
     const [filters, setFilters] = useState({ quoteNumber: '', clientName: '', date: '' });
+    const [generatingPdfId, setGeneratingPdfId] = useState<string | null>(null);
 
     const handleDelete = (e: React.MouseEvent, id: string) => {
         e.stopPropagation(); // Prevent row click event
@@ -26,6 +28,18 @@ const HomePage: React.FC<HomePageProps> = ({ quotes, onNewQuote, onSelectQuote, 
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters(prev => ({...prev, [e.target.name]: e.target.value}));
+    };
+
+    const handleDownloadPdf = async (e: React.MouseEvent, quote: Quote) => {
+        e.stopPropagation();
+        setGeneratingPdfId(quote.id);
+        try {
+            await generateQuotePdf(quote);
+        } catch (error) {
+            console.error("PDF generation on homepage failed", error);
+        } finally {
+            setGeneratingPdfId(null);
+        }
     };
     
     const quotesWithTotals = useMemo(() => {
@@ -135,6 +149,18 @@ const HomePage: React.FC<HomePageProps> = ({ quotes, onNewQuote, onSelectQuote, 
                                             <div className="flex items-center justify-center gap-4">
                                                 <button onClick={() => onSelectQuote(quote.id)} className="text-blue-600 hover:text-blue-900" aria-label={`Upravit nabídku ${quote.quoteNumber}`}>
                                                     <PencilIcon className="w-5 h-5"/>
+                                                </button>
+                                                <button 
+                                                    onClick={(e) => handleDownloadPdf(e, quote)} 
+                                                    disabled={generatingPdfId === quote.id}
+                                                    className="text-green-600 hover:text-green-900 disabled:opacity-50 disabled:cursor-wait" 
+                                                    aria-label={`Stáhnout PDF pro nabídku ${quote.quoteNumber}`}
+                                                >
+                                                    {generatingPdfId === quote.id ? (
+                                                        <SpinnerIcon className="animate-spin w-5 h-5"/> 
+                                                    ) : (
+                                                        <DownloadIcon className="w-5 h-5" />
+                                                    )}
                                                 </button>
                                                 <button onClick={(e) => handleDelete(e, quote.id)} className="text-red-600 hover:text-red-900" aria-label={`Smazat nabídku ${quote.quoteNumber}`}>
                                                     <TrashIcon className="w-5 h-5" />
