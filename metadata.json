@@ -1,0 +1,5 @@
+{
+  "name": "AI Generátor Cenových Nabídek",
+  "description": "Webová aplikace pro vytváření profesionálních cenových nabídek s pomocí AI pro generování popisů položek a obchodních podmínek.",
+  "requestFramePermissions": []
+}
